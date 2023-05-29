@@ -3,4 +3,11 @@ node_modules/
 storybook-static/
 build-storybook.log
 .DS_Store
+
+# IDE
+.idea
+
+# environmental variables
 .env
+.env.*
+!.env.example
