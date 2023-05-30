@@ -1,38 +1,62 @@
-import React, { memo, useCallback, useEffect } from "react";
-import { useGlobals, useStorybookApi } from "@storybook/manager-api";
-import { Icons, IconButton } from "@storybook/components";
-import { ADDON_ID, PARAM_KEY, TOOL_ID } from "./constants";
+import React, { ComponentProps, memo, useCallback } from "react";
+import { useGlobals, useParameter } from "@storybook/manager-api";
+import {
+  IconButton,
+  Icons,
+  TooltipLinkList,
+  WithTooltip,
+} from "@storybook/components";
+import { PARAM_KEY, TOOL_ID } from "./constants";
+import { CSSTogglerParameters } from "./types";
 
-export const Tool = memo(function MyAddonSelector() {
+export const Tool = memo(function CSSTogglerSelector() {
   const [globals, updateGlobals] = useGlobals();
-  const api = useStorybookApi();
 
-  const isActive = [true, "true"].includes(globals[PARAM_KEY]);
+  const { stylesheets = [] } = useParameter<CSSTogglerParameters>(PARAM_KEY, {
+    stylesheets: [],
+  });
 
-  const toggleMyTool = useCallback(() => {
-    updateGlobals({
-      [PARAM_KEY]: !isActive,
-    });
-  }, [isActive]);
+  const selectedStylesheetId = globals[PARAM_KEY] as string;
 
-  useEffect(() => {
-    api.setAddonShortcut(ADDON_ID, {
-      label: "Toggle Measure [O]",
-      defaultShortcut: ["O"],
-      actionName: "outline",
-      showInMenu: false,
-      action: toggleMyTool,
-    });
-  }, [toggleMyTool, api]);
+  const isAnyStylesheetActive = !!stylesheets.find(
+    (i) => i.id === selectedStylesheetId
+  );
+
+  const updateSelectedStylesheet = useCallback(
+    (id: string) => updateGlobals({ [PARAM_KEY]: id }),
+    [selectedStylesheetId]
+  );
+
+  if (stylesheets.length < 1) {
+    return null;
+  }
+
+  if (stylesheets.length && !selectedStylesheetId) {
+    updateSelectedStylesheet(stylesheets[0].id);
+  }
+
+  const links = stylesheets.map((i) => {
+    return {
+      ...i,
+      onClick: () => updateSelectedStylesheet(i.id),
+      active: i.id === selectedStylesheetId,
+    };
+  }) satisfies ComponentProps<typeof TooltipLinkList>["links"];
 
   return (
-    <IconButton
-      key={TOOL_ID}
-      active={isActive}
-      title="Enable my addon"
-      onClick={toggleMyTool}
+    <WithTooltip
+      placement="top"
+      trigger="click"
+      tooltip={<TooltipLinkList links={links} />}
+      closeOnOutsideClick
     >
-      <Icons icon="lightning" />
-    </IconButton>
+      <IconButton
+        key={TOOL_ID}
+        active={isAnyStylesheetActive}
+        title="Toggle CSS"
+      >
+        <Icons icon="paintbrush" />
+      </IconButton>
+    </WithTooltip>
   );
 });

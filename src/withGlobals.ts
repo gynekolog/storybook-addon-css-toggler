@@ -3,15 +3,25 @@ import type {
   PartialStoryFn as StoryFunction,
   StoryContext,
 } from "@storybook/types";
-import { useEffect, useGlobals } from "@storybook/preview-api";
+import { useEffect, useGlobals, useParameter } from "@storybook/preview-api";
 import { PARAM_KEY } from "./constants";
+import { CSSTogglerParameters } from "./types";
 
 export const withGlobals = (
   StoryFn: StoryFunction<Renderer>,
   context: StoryContext<Renderer>
 ) => {
   const [globals] = useGlobals();
-  const myAddon = globals[PARAM_KEY];
+  const selectedStylesheetId = globals[PARAM_KEY];
+
+  const { stylesheets = [] } = useParameter<CSSTogglerParameters>(PARAM_KEY, {
+    stylesheets: [],
+  });
+
+  const activeStylesheet = stylesheets.find(
+    (stylesheet) => stylesheet.id === selectedStylesheetId
+  );
+
   // Is the addon being used in the docs panel
   const isInDocs = context.viewMode === "docs";
   const { theme } = context.globals;
@@ -23,39 +33,24 @@ export const withGlobals = (
       ? `#anchor--${context.id} .sb-story`
       : "#storybook-root";
 
-    displayToolState(selector, {
-      myAddon,
-      isInDocs,
-      theme,
-    });
-  }, [myAddon, theme]);
+    renderStylesheet(selector, activeStylesheet);
+  }, [selectedStylesheetId, theme]);
 
   return StoryFn();
 };
 
-function displayToolState(selector: string, state: any) {
-  const rootElements = document.querySelectorAll(selector);
+function renderStylesheet(
+  selector: string,
+  styleSheetItem: CSSTogglerParameters["stylesheets"][number]
+) {
+  const headEl = document.querySelector("head");
+  let stylesheetEl = document.querySelector("style#css-toggler");
 
-  rootElements.forEach((rootElement) => {
-    let preElement = rootElement.querySelector<HTMLPreElement>(
-      `${selector} pre`
-    );
+  if (!stylesheetEl) {
+    stylesheetEl = document.createElement("style");
+    stylesheetEl.setAttribute("id", "css-toggler");
+    headEl.appendChild(stylesheetEl);
+  }
 
-    if (!preElement) {
-      preElement = document.createElement("pre");
-      preElement.style.setProperty("margin-top", "2rem");
-      preElement.style.setProperty("padding", "1rem");
-      preElement.style.setProperty("background-color", "#eee");
-      preElement.style.setProperty("border-radius", "3px");
-      preElement.style.setProperty("max-width", "600px");
-      preElement.style.setProperty("overflow", "scroll");
-      rootElement.appendChild(preElement);
-    }
-
-    preElement.innerText = `This snippet is injected by the withGlobals decorator.
-It updates as the user interacts with the ⚡ or Theme tools in the toolbar above.
-
-${JSON.stringify(state, null, 2)}
-`;
-  });
+  stylesheetEl.textContent = styleSheetItem.content;
 }

@@ -10,7 +10,7 @@
     "type": "git",
     "url": "nope"
   },
-  "author": "Ján Gál <honza.gal@gmail.com>",
+  "author": "Honza Gál <honza.gal@gmail.com>",
   "license": "MIT",
   "exports": {
     ".": {
