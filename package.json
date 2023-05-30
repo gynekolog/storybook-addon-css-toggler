@@ -1,6 +1,6 @@
 {
   "name": "storybook-addon-css-toggler",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Toggle loaded CSS files",
   "keywords": [
     "nope",
