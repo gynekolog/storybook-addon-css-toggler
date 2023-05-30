@@ -33,6 +33,8 @@ export const withGlobals = (
       ? `#anchor--${context.id} .sb-story`
       : "#storybook-root";
 
+    if (!activeStylesheet) return;
+
     renderStylesheet(selector, activeStylesheet);
   }, [selectedStylesheetId, theme]);
 
