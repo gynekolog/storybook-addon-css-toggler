@@ -10,17 +10,9 @@ Install the addon:
 yarn add -D storybook-addon-css-toggler
 ```
 
-Then add this line to your `addons.js` file (create this file inside your storybook config directory if needed).
+Add your configuration to the preview.ts file:
 
-```js
-
-
-import 'storybook-addon-css-toggler/register';
-```
-
-Then add your configuration to the preview.ts file:
-
-```js
+```ts
 import type { Preview } from "@storybook/react";
 import blue from "../css/blue.css?inline";
 import red from "../css/red.css?inline";
@@ -43,3 +35,13 @@ const preview: Preview = {
         },
     },
 };
+```
+
+Add the addon to the storybook main.ts file:
+
+```ts
+...
+addons: [
+    "storybook-addon-css-toggler",
+  ],
+...
